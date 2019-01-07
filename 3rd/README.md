@@ -36,9 +36,14 @@ if you want to change the dimention of the model, please look at the linear_regr
 
 - **animation**
 
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/3rd/animation_1.gif width = 70%>
 
 - **comparing dimentions**
 
+upper dimention is 2
+lower dimention is 7
+
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/3rd/Figure_1.png width = 70%>
 
 # Requirements
 - python3.5 or more
