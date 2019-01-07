@@ -1,0 +1,11 @@
+*.csv
+*.log
+*.pickle
+*.mp4
+
+.cache/
+.eggs/
+__pycache__/
+.pytest_cache
+cache/
+trash/
