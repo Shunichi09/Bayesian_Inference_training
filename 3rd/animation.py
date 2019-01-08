@@ -143,5 +143,5 @@ class AnimDrawer():
         self.line_imgs[2].set_data(np.arange(x_min, x_max, step), self.history_means[i] - self.history_deviations[i])
 
         # point
-        for j in range(i):
+        for j in range(i + 1):
             self.point_imgs[j].set_data(self.observation_points[j, 0], self.observation_points[j, 1])
