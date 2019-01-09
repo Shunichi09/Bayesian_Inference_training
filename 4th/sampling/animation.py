@@ -13,13 +13,13 @@ plt.rcParams["font.size"] = 10
 plt.rcParams['axes.linewidth'] = 1.0 # axis line width
 plt.rcParams['axes.grid'] = True # make grid\
 
-def draw_elipse(m, co, kai_val=5.991):
+def draw_elipse(m, cov, kai_val=5.991):
     """make elipse with mean and co-varince matrix
     Parameters
     -----------
     m : numpy.ndarray
         mean
-    co : numpy.ndarray
+    cov : numpy.ndarray
         covariance matrix
     kai_val : float
         kai square distribution
@@ -30,10 +30,10 @@ def draw_elipse(m, co, kai_val=5.991):
     e_ys : numpy.ndarray
         elipse points
     """
-    eig_val, eig_vec = np.linalg.eig(co)
+    eig_val, eig_vec = np.linalg.eig(cov)
 
-    # print("eig_val = {0}".format(eig_val))
-    # print("eig_vec = {0}".format(eig_vec))
+    print("eig_val = {0}".format(eig_val))
+    print("eig_vec = {0}".format(eig_vec))
 
     a = math.sqrt(np.max(eig_val) * kai_val)
     b = math.sqrt(np.min(eig_val) * kai_val)
@@ -69,18 +69,18 @@ class AnimDrawer():
     anim_fig : figure of matplotlib
     axis : axis of matplotlib
     """
-    def __init__(self, objects):
+    def __init__(self, objects, observation_points=None):
         """
         Parameters
         ------------
         objects : list of objects
         """
-        self.observation_points = objects[0]
-        self.history_means = objects[1]
-        self.history_covs = objects[2]
-        self.true_mean = objects[3]
-        self.true_cov = objects[4]
-        self.history_KL_score = objects[5]
+        self.observation_points = observation_points
+        self.history_means = objects[0]
+        self.history_covs = objects[1]
+        self.true_mean = objects[2]
+        self.true_cov = objects[3]
+        self.history_KL_score = objects[4]
 
         # setting up figure
         self.anim_fig = plt.figure(dpi=150)
@@ -173,7 +173,11 @@ class AnimDrawer():
         object_imgs : list of img
         traj_imgs : list of img
         """
-        self.step_text.set_text('points_num = {0}, KL = {1}'.format(i + 5, self.history_KL_score[i]))
+        if self.observation_points is not None:
+            self.step_text.set_text('points_num = {0}, KL = {1}'.format(i + 5, self.history_KL_score[i]))
+        else:
+            self.step_text.set_text('KL = {0}'.format(self.history_KL_score[i]))
+
         self._draw_objs(i)
 
         return self.elipse_imgs, self.mean_point_img, self.point_imgs
@@ -202,8 +206,9 @@ class AnimDrawer():
         self.elipse_imgs[1].set_data(est_e_xs, est_e_ys)
 
         # obse point
-        for j in range(i + 1):
-            self.point_imgs[j].set_data(self.observation_points[0, j], self.observation_points[1, j])
+        if self.observation_points is not None:
+            for j in range(i + 1):
+                self.point_imgs[j].set_data(self.observation_points[0, j], self.observation_points[1, j])
 
         # mean points
         # true
