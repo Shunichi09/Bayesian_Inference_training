@@ -29,12 +29,19 @@ $ python variation.py
 
 - Gibbs sampling
 
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/4th/sampling/animation_1.gif width = 70%>
 
+KL divergence
+
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/4th/sampling/Figure_1.png width = 70%>
 
 - Variational inference
 
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/4th/sampling/animation_2.gif width = 70%>
 
+KL divergence
 
+<img src = https://github.com/Shunichi09/Bayesian_Inference_training/blob/demo_pic/4th/sampling/Figure_2.png width = 70%>
 
 # Requirement
 
