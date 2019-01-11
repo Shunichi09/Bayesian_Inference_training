@@ -5,7 +5,7 @@ import math
 from scipy import stats
 from sklearn.utils import shuffle
 
-def sampling_mixture_poisson(nums=100, classes=4):
+def sampling_mixture_poisson(nums=100, classes=4, a=10., b=5., ):
     """
     """
     dim = 2
@@ -165,13 +165,18 @@ def main():
 
     classifier = GibbsMixturedPoisson(data, class_num, dim)
 
-    iteration_num = 500
+    iteration_num = 50
 
     for i in range(iteration_num):
         print("iteration num = {0}".format(i))
         history_s_sample = classifier.gibbs_sample()
 
     colors = ["r", "b", "g", "y"]
+
+    for i, datum in enumerate(data):
+        plt.plot(datum[0], datum[1], "o", color=colors[history_s_sample[0][i]])
+    
+    plt.show()
 
     for i, datum in enumerate(data):
         plt.plot(datum[0], datum[1], "o", color=colors[history_s_sample[-1][i]])
