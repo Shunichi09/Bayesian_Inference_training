@@ -7,10 +7,6 @@ import math
 
 # default setting of figures
 plt.rcParams["mathtext.fontset"] = 'stix' # math fonts
-plt.rcParams['xtick.direction'] = 'in' # x axis in
-plt.rcParams['ytick.direction'] = 'in' # y axis in 
-plt.rcParams["font.size"] = 10
-plt.rcParams['axes.linewidth'] = 1.0 # axis line width
 plt.rcParams['axes.grid'] = True # make grid\
 
 class AnimDrawer():
@@ -37,10 +33,11 @@ class AnimDrawer():
         # imgs
         self.point_imgs_class_1 = []
         self.point_imgs_class_2 = []
+        self.point_imgs_class_3 = []
 
         self.step_text = None
         
-    def draw_anim(self, interval=250):
+    def draw_anim(self, interval=300):
         """draw the animation and save
         Parameteres
         -------------
@@ -76,8 +73,9 @@ class AnimDrawer():
         # self.axis.set_aspect('equal', adjustable='box')
 
         # set the xlim and ylim        
-        self.axis.set_xlim(np.min(self.observation_points), np.min(self.observation_points))
-        self.axis.set_ylim(np.min(self.observation_points), np.min(self.observation_points))         
+        margin = 5
+        self.axis.set_xlim(np.min(self.observation_points) - margin, np.max(self.observation_points) + margin)
+        self.axis.set_ylim(np.min(self.observation_points) - margin, np.max(self.observation_points) + margin)         
 
     def _set_img(self):
         """ initialize the imgs of animation
@@ -87,14 +85,18 @@ class AnimDrawer():
         self.step_text = self.axis.text(0.05, 0.9, '', transform=self.axis.transAxes)
 
         # observed point
-        point_color_list = ["r", "b"]
-        for i in range(len(self.history_s_sample)):
+        point_color_list = ["r", "b", "g"]
+        for i in range(len(self.observation_points)):
             temp_img, = self.axis.plot([],[], ".", color=point_color_list[0])
             self.point_imgs_class_1.append(temp_img)
 
-        for i in range(len(self.history_s_sample)):
+        for i in range(len(self.observation_points)):
             temp_img, = self.axis.plot([],[], ".", color=point_color_list[1])
             self.point_imgs_class_2.append(temp_img)
+
+        for i in range(len(self.observation_points)):
+            temp_img, = self.axis.plot([],[], ".", color=point_color_list[2])
+            self.point_imgs_class_3.append(temp_img)
     
     def _update_anim(self, i):
         """the update animation
@@ -125,6 +127,15 @@ class AnimDrawer():
             the sampling time should be related to the sampling time of system
         """
         
-        for k, datum in enumerate(self.observation_points):
+        for j, datum in enumerate(self.observation_points):
 
-            if self.history_s_sample[i][j]  
+            self.point_imgs_class_1[j].set_data([], [])
+            self.point_imgs_class_2[j].set_data([], [])
+            self.point_imgs_class_3[j].set_data([], [])
+
+            if self.history_s_sample[i][j]  == 0:
+                self.point_imgs_class_1[j].set_data(datum[0], datum[1])
+            elif self.history_s_sample[i][j] == 1:
+                self.point_imgs_class_2[j].set_data(datum[0], datum[1])
+            elif self.history_s_sample[i][j] == 2: 
+                self.point_imgs_class_3[j].set_data(datum[0], datum[1])
