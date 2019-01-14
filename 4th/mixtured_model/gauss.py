@@ -7,6 +7,54 @@ from sklearn.utils import shuffle
 
 from animation import AnimDrawer
 
+def draw_elipse(m, co, kai_val=5.991):
+    """make elipse with mean and co-varince matrix
+    Parameters
+    -----------
+    m : numpy.ndarray
+        mean
+    co : numpy.ndarray
+        covariance matrix
+    kai_val : float
+        kai square distribution
+    Returns
+    ------------
+    e_xs : numpy.ndarray
+        elipse points
+    e_ys : numpy.ndarray
+        elipse points
+    """
+    eig_val, eig_vec = np.linalg.eig(co)
+
+    # print("eig_val = {0}".format(eig_val))
+    # print("eig_vec = {0}".format(eig_vec))
+
+    a = math.sqrt(np.max(eig_val) * kai_val)
+    b = math.sqrt(np.min(eig_val) * kai_val)
+
+    eig_num = np.argmax(eig_val)
+
+    theta = math.atan2(eig_vec[eig_num][1], eig_vec[eig_num][0])
+
+    # sampling
+    e_xs = []
+    e_ys = []
+
+    for t in np.arange(0, 2. * math.pi, 0.01):
+        e_xs.append(a * math.cos(t))
+        e_ys.append(b * math.sin(t))
+
+    # rotation
+    rot_mat = np.array([[math.cos(theta), math.sin(theta)],
+                        [-math.sin(theta), math.cos(theta)]])
+
+    e_points = np.dot(rot_mat, np.array([e_xs, e_ys]))
+
+    e_xs = e_points[0, :] + m[0]
+    e_ys = e_points[1, :] + m[1]
+
+    return e_xs, e_ys
+
 def calc_softmax(array):
     """
     Parmeters
@@ -26,27 +74,53 @@ def calc_softmax(array):
     return normalized_array
 
 
-def sampling_mixture_poisson(nums=100, classes=4):
+def sampling_mixture_poisson(nums=100, classes=3):
     """
     """
-    dim = 2
-    sample_points = []
+    sample_points = None
     label = []
 
     for i in range(classes):
-        two_d_points = []
-        for _ in range(dim):
-            lam =  np.random.randint(10, 300)
-            print("lam = {0}".format(lam))
-            points = np.random.poisson(lam, (nums))
-            two_d_points.append(points)
 
-        sample_points.extend(np.array(two_d_points).T)
+        # make parameter matrix
+        eigs = np.random.randint(1, 10, (2))
+        long_eig = float(max(eigs))
+        short_eig = float(min(eigs))
+        eig_mat = np.array([[long_eig, 0.],
+                            [0., short_eig]])
+        
+        theta = abs(np.random.randn())
+        rot_mat = np.array([[math.cos(theta), -math.sin(theta)],
+                            [math.sin(theta), math.cos(theta)]])
+        
+        temp_mat = np.dot(rot_mat, np.linalg.inv(eig_mat))
+        co_variance_mat = np.dot(temp_mat, rot_mat.T)
+        mean = np.array([float(np.random.randint(1, 10)), float(np.random.randint(1, 10))])
+        param_mat = np.linalg.inv(co_variance_mat)
+
+        # e_xs, e_ys = draw_elipse(mean, co_variance_mat)
+        # plt.plot(e_xs, e_ys)
+
+        print("eig_mat = {0}".format(eig_mat))
+        print("mean = {0}".format(mean))
+        print("cov = {0}".format(co_variance_mat))
+        print("eig = {0}" .format(np.linalg.eig(co_variance_mat)))
+
+        multi_gauss = stats.multivariate_normal(mean, co_variance_mat)
+
+        # sample
+        points = multi_gauss.rvs(nums)
+
+        print(points.shape)
+
+        if sample_points is None:
+            sample_points = points
+        else:
+            sample_points = np.vstack((sample_points, points))
+
         label.extend(np.ones(nums) * (i+1))
 
-    sample_points = np.array(sample_points)
     label = np.array(label).flatten()
-
     sample_points, label = shuffle(sample_points, label)
 
     plt.scatter(sample_points[:, 0], sample_points[:, 1])
@@ -54,7 +128,7 @@ def sampling_mixture_poisson(nums=100, classes=4):
 
     return sample_points
 
-class GibbsMixturedPoisson():
+class GibbsMixtureGaussModel():
     """
     Attributes
     ----------
@@ -102,17 +176,19 @@ class GibbsMixturedPoisson():
         self.history_s_sample = []
         self.history_eata_sample = []
 
-    def gibbs_sample(self):
+    def gibbs_sample(self, iteration_num=100):
         """
         """
-        self._sample_s()
-        self._sample_lam_pi()
+        for i in range(iteration_num):
 
-        self.history_s_sample.append(self.s_sample)
+            self._sample_s()
+            self._sample_lam_pi()
 
-        print("lam sample = {0}".format(self.lam_sample))
-        print("pi sample = {0}".format(self.pi_sample))
-        # print(" sample = {0}".format(self.history_s_sample))
+            self.history_s_sample.append(self.s_sample)
+
+            print("lam sample = {0}".format(self.lam_sample))
+            print("pi sample = {0}".format(self.pi_sample))
+            # print(" sample = {0}".format(self.history_s_sample))
 
         return self.history_s_sample, self.history_eata_sample
 
@@ -190,20 +266,11 @@ class GibbsMixturedPoisson():
         self.pi_sample = np.random.dirichlet(self.alpha_sample)
 
 def main():
-    dim = 2
-    class_num = 3
+    class_num = 2
     data = sampling_mixture_poisson(classes=class_num)
 
-    classifier = GibbsMixturedPoisson(data, class_num, dim)
-
-    iteration_num = 15
-
-    for i in range(iteration_num):
-        print("iteration num = {0}".format(i))
-        history_s_sample, history_eata_sample = classifier.gibbs_sample()
-
-    colors = ["r", "b", "g", "y"]
-
+    
+    """
     for i, datum in enumerate(data):
         plt.plot(datum[0], datum[1], "o", color=tuple(history_eata_sample[0][i]))
     
@@ -218,6 +285,7 @@ def main():
     animdrawer = AnimDrawer(objects, observation_points=data)
     
     animdrawer.draw_anim()
+    """
 
 if __name__ == "__main__":
     main()
